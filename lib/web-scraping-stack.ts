@@ -45,7 +45,7 @@ export class WebScrapingStack extends cdk.Stack {
           path.join(__dirname, "../lambda/scroll-scraping")
         ),
         handler: "index.handler",
-        layers: [puppeteerLayer],
+        // layers: [puppeteerLayer],
         memorySize: 2048,
         timeout: cdk.Duration.seconds(45),
       }
