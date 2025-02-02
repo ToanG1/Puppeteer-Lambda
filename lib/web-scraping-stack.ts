@@ -40,7 +40,7 @@ export class WebScrapingStack extends cdk.Stack {
           path.join(__dirname, "../lambda/scroll-scraping")
         ),
         handler: "index.handler",
-        memorySize: 2048,
+        memorySize: 1024,
         timeout: cdk.Duration.seconds(45),
       }
     );
