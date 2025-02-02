@@ -4,6 +4,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as path from "path";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 
 export class WebScrapingStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -30,6 +31,16 @@ export class WebScrapingStack extends cdk.Stack {
     });
 
     secret.grantRead(authorizerLambda);
+
+    const rateLimitTable = new dynamodb.Table(this, "RateLimitTable", {
+      tableName: "RateLimitTable",
+      partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, // Auto-scaling billing
+      timeToLiveAttribute: "expiry", // TTL column for daily reset
+      removalPolicy: cdk.RemovalPolicy.RETAIN, // Keep data even after stack deletion
+    });
+
+    rateLimitTable.grantReadWriteData(authorizerLambda);
 
     const scrollScrapingLambda = new lambda.Function(
       this,
