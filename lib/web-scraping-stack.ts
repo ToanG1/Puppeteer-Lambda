@@ -31,11 +31,6 @@ export class WebScrapingStack extends cdk.Stack {
 
     secret.grantRead(authorizerLambda);
 
-    const puppeteerLayer = new lambda.LayerVersion(this, "PuppeteerLayer", {
-      code: lambda.Code.fromAsset(path.join(__dirname, "../puppeteer-layer")),
-      compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
-    });
-
     const scrollScrapingLambda = new lambda.Function(
       this,
       "ScollScrapingLambda",
@@ -45,7 +40,6 @@ export class WebScrapingStack extends cdk.Stack {
           path.join(__dirname, "../lambda/scroll-scraping")
         ),
         handler: "index.handler",
-        // layers: [puppeteerLayer],
         memorySize: 2048,
         timeout: cdk.Duration.seconds(45),
       }
