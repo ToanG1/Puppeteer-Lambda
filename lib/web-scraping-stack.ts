@@ -35,9 +35,9 @@ export class WebScrapingStack extends cdk.Stack {
     const rateLimitTable = new dynamodb.Table(this, "RateLimitTable", {
       tableName: "RateLimitTable",
       partitionKey: { name: "token", type: dynamodb.AttributeType.STRING },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST, // Auto-scaling billing
-      timeToLiveAttribute: "expiry", // TTL column for daily reset
-      removalPolicy: cdk.RemovalPolicy.RETAIN, // Keep data even after stack deletion
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      timeToLiveAttribute: "expiry",
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 
     rateLimitTable.grantReadWriteData(authorizerLambda);
