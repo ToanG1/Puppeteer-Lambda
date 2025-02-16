@@ -48,20 +48,24 @@ async function fetchDocumentWithLazyLoad(url) {
     await page.goto(url, { waitUntil: "domcontentloaded" });
 
     const viewportHeight = await page.evaluate(() => window.innerHeight);
-    let previousScrollTop = 0;
+    let previousScrollTop = -1;
     const startTime = Date.now();
     let retryCheckEndpointCount = 0;
 
     while (Date.now() - startTime < MAX_DURATION) {
+      console.log("Previous Scroll:", previousScrollTop);
+
       const { scrollTop, scrollHeight } = await page.evaluate(() => ({
         scrollTop: window.scrollY,
         scrollHeight: document.documentElement.scrollHeight,
       }));
 
+      console.log("Current Scroll:", scrollTop);
+
       if (scrollTop === previousScrollTop) {
         if (retryCheckEndpointCount < MAX_RETRY_CHECK_ENDPOINT) {
           retryCheckEndpointCount++;
-          await waitForTimeout(500);
+          await page.waitForTimeout(500);
           continue;
         }
         break;
@@ -69,9 +73,14 @@ async function fetchDocumentWithLazyLoad(url) {
         retryCheckEndpointCount = 0;
       }
 
+      if (scrollTop + viewportHeight >= scrollHeight) {
+        console.log("Reached bottom, stopping scroll.");
+        break;
+      }
+
       await page.mouse.wheel({ deltaY: viewportHeight });
 
-      await waitForTimeout(random(500, 1000));
+      await page.waitForTimeout(random(500, 1000));
 
       previousScrollTop = scrollTop;
     }
