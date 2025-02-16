@@ -47,7 +47,26 @@ async function fetchDocumentWithLazyLoad(url) {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: "domcontentloaded" });
 
-    const viewportHeight = await page.evaluate(() => window.innerHeight);
+    await page.evaluate(() => {
+      document.body.style.overflow = "visible";
+      document.documentElement.style.overflow = "visible";
+
+      const observer = new MutationObserver(() => {
+        document.body.style.overflow = "visible";
+        document.documentElement.style.overflow = "visible";
+      });
+
+      observer.observe(document.body, {
+        attributes: true,
+        attributeFilter: ["style"],
+      });
+
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["style"],
+      });
+    });
+
     let previousScrollTop = -1;
     const startTime = Date.now();
     let retryCheckEndpointCount = 0;
@@ -57,13 +76,12 @@ async function fetchDocumentWithLazyLoad(url) {
 
       const { scrollTop } = await page.evaluate(() => ({
         scrollTop: window.scrollY,
-        scrollHeight: document.documentElement.scrollHeight,
       }));
 
       if (scrollTop === previousScrollTop) {
         if (retryCheckEndpointCount < MAX_RETRY_CHECK_ENDPOINT) {
           retryCheckEndpointCount++;
-          await waitForTimeout(random(500, 1000));
+          await waitForTimeout(500);
           continue;
         }
         break;
@@ -71,7 +89,7 @@ async function fetchDocumentWithLazyLoad(url) {
         retryCheckEndpointCount = 0;
       }
 
-      await page.mouse.wheel({ deltaY: viewportHeight });
+      await page.mouse.wheel({ deltaY: 4000 });
 
       previousScrollTop = scrollTop;
     }
@@ -84,10 +102,6 @@ async function fetchDocumentWithLazyLoad(url) {
       await browser.close();
     }
   }
-}
-
-function random(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 function waitForTimeout(ms) {
