@@ -74,8 +74,6 @@ async function fetchDocumentWithLazyLoad(url) {
       await waitForTimeout(random(500, 1000));
 
       previousScrollTop = scrollTop;
-
-      if (scrollTop + viewportHeight >= scrollHeight) break;
     }
 
     return await page.content();
