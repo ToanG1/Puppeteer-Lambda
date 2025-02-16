@@ -18,7 +18,7 @@ export class ScrollScrapingLambdaConstruct extends Construct {
           path.join(__dirname, "../lambda/scroll-scraping")
         ),
         handler: "index.handler",
-        memorySize: 2048,
+        memorySize: 1536,
         timeout: cdk.Duration.seconds(45),
       }
     );
