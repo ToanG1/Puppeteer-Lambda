@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib';
-import { WebScrapingStack } from '../lib/web-scraping-stack';
+import { WebScrapingStack } from '../lib/WebScrapingStack';
 
 const app = new cdk.App();
 new WebScrapingStack(app, 'WebScrapingStack', {

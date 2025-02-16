@@ -4,7 +4,7 @@ const secretsManager = new AWS.SecretsManager();
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 const TABLE_NAME = "RateLimitTable";
-const REQUEST_LIMIT = 100;
+const REQUEST_LIMIT = 200;
 
 exports.handler = async function (event) {
   try {
