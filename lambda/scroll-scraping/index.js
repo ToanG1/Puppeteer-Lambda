@@ -63,7 +63,7 @@ async function fetchDocumentWithLazyLoad(url) {
       if (scrollTop === previousScrollTop) {
         if (retryCheckEndpointCount < MAX_RETRY_CHECK_ENDPOINT) {
           retryCheckEndpointCount++;
-          waitForTimeout(500);
+          await waitForTimeout(500);
           continue;
         }
         break;
@@ -73,7 +73,7 @@ async function fetchDocumentWithLazyLoad(url) {
 
       await page.mouse.wheel({ deltaY: viewportHeight });
 
-      waitForTimeout(random(500, 1000));
+      await waitForTimeout(random(500, 1000));
 
       previousScrollTop = scrollTop;
     }
