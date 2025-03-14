@@ -1,27 +1,24 @@
 const AWS = require("aws-sdk");
 
-const secretsManager = new AWS.SecretsManager();
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
-
-const TABLE_NAME = "RateLimitTable";
+const AUTH_TABLE = "AuthTokenTable";
+const RATE_LIMIT_TABLE = "RateLimitTable";
 const REQUEST_LIMIT = 500;
 
 exports.handler = async function (event) {
   try {
-    const secretData = await secretsManager
-      .getSecretValue({ SecretId: "WebScrapingAuthToken" })
-      .promise();
-    const secret = JSON.parse(secretData.SecretString);
-    const expectedToken = secret.token;
-
     const token = event.authorizationToken?.replace("Bearer ", "");
 
-    if (token !== expectedToken) {
+    if (!token) {
+      return generatePolicy("Deny", event.methodArn);
+    }
+
+    const isValidToken = await validateToken(token);
+    if (!isValidToken) {
       return generatePolicy("Deny", event.methodArn);
     }
 
     const { requestCount, expiry } = await getRequestCount(token);
-
     if (requestCount >= REQUEST_LIMIT) {
       return generatePolicy("Deny", event.methodArn);
     }
@@ -30,24 +27,32 @@ exports.handler = async function (event) {
 
     return generatePolicy("Allow", event.methodArn);
   } catch (error) {
+    console.error("Error:", error);
     return generatePolicy("Deny", event.methodArn);
   }
 };
 
-async function getRequestCount(token) {
+async function validateToken(token) {
   const params = {
-    TableName: TABLE_NAME,
+    TableName: AUTH_TABLE,
     Key: { token },
   };
   const result = await dynamoDB.get(params).promise();
-  const item = result.Item || { requestCount: 0, expiry: getNextResetTime() };
+  return result.Item ? true : false;
+}
 
-  return item;
+async function getRequestCount(token) {
+  const params = {
+    TableName: RATE_LIMIT_TABLE,
+    Key: { token },
+  };
+  const result = await dynamoDB.get(params).promise();
+  return result.Item || { requestCount: 0, expiry: getNextResetTime() };
 }
 
 async function incrementRequestCount(token, expiry) {
   const params = {
-    TableName: TABLE_NAME,
+    TableName: RATE_LIMIT_TABLE,
     Key: { token },
     UpdateExpression:
       "SET requestCount = if_not_exists(requestCount, :start) + :incr, expiry = :exp",

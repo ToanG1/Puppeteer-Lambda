@@ -3,9 +3,8 @@ import { Construct } from "constructs";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { AuthorizerLambdaConstruct } from "./AuthorizerLambdaConstruct";
 import { ApiGatewayConstruct } from "./ApiGatewayConstruct";
-import { RateLimitTableConstruct } from "./RateLimitTableConstruct";
+import { TablesConstruct } from "./TablesConstruct";
 import { ScrollScrapingLambdaConstruct } from "./ScrollScrapingLambdaConstruct";
-import { SecretConstruct } from "./SecretConstruct";
 
 export class WebScrapingStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -15,16 +14,13 @@ export class WebScrapingStack extends cdk.Stack {
       this,
       "AuthorizerLambdaConstruct"
     );
-    const secretConstruct = new SecretConstruct(this, "SecretConstruct");
-    const rateLimitTableConstruct = new RateLimitTableConstruct(
-      this,
-      "RateLimitTableConstruct"
-    );
+    const tablesConstruct = new TablesConstruct(this, "TablesConstruct");
 
-    secretConstruct.secret.grantRead(
+    tablesConstruct.rateLimitTable.grantReadWriteData(
       authorizerLambdaConstruct.authorizerLambda
     );
-    rateLimitTableConstruct.rateLimitTable.grantReadWriteData(
+
+    tablesConstruct.authTokenTable.grantReadWriteData(
       authorizerLambdaConstruct.authorizerLambda
     );
 
