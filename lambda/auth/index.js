@@ -3,7 +3,7 @@ const AWS = require("aws-sdk");
 const dynamoDB = new AWS.DynamoDB.DocumentClient();
 const AUTH_TABLE = "AuthTokenTable";
 const RATE_LIMIT_TABLE = "RateLimitTable";
-const REQUEST_LIMIT = 500;
+const REQUEST_LIMIT = 2000;
 
 exports.handler = async function (event) {
   try {
